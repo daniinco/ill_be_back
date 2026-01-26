@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from models.models import AdvertRequest
+from services.prediction_service import PredictionService
 
 router = APIRouter()
 
@@ -9,6 +10,6 @@ async def predict(advertisement: AdvertRequest) -> bool:
     Предсказывает, есть ли в объявлении нарушения
     """
     try:
-        return advertisement.is_verified_seller or advertisement.images_qty > 0 
+        return PredictionService.predict_violation(advertisement)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
