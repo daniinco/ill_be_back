@@ -9,3 +9,9 @@ class AdvertRequest(BaseModel):
     description: str
     category: int
     images_qty: int
+
+class PreprocessedAdvertRequest(BaseModel):
+    is_verified_seller: float
+    description_length: float
+    category: float
+    images_qty: float
