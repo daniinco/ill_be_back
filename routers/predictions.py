@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/")
+@router.post("/predict")
 def predict(
     advertisement: AdvertRequest,
     prediction_service: PredictionService = Depends(get_prediction_service)
@@ -21,5 +21,27 @@ def predict(
         predictions = prediction_service.predict_violation(advertisement)
         logger.info("Предсказание успешно")
         return predictions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
+
+@router.post("/simple_predict")
+async def simple_predict(
+    item_id: int,
+    prediction_service: PredictionService = Depends(get_prediction_service)
+):
+    """
+    Предсказывает, есть ли в объявлении нарушения
+    """
+    try:
+        logger.info("Получен запрос на предсказание нарушения")
+        predictions = await prediction_service.predict_violation_by_item_id(item_id)
+        
+        if predictions is None:
+            raise HTTPException(status_code=404, detail="Объявление не найдено")
+        
+        logger.info("Предсказание успешно")
+        return predictions
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")

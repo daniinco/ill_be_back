@@ -1,0 +1,1 @@
+backend_venv/bin/python -m pgmigrate -t latest migrate -c "postgresql://localhost:5432/postgres" -d .

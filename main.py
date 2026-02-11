@@ -26,4 +26,4 @@ app = FastAPI(lifespan=lyfespan)
 async def root():
     return {'message': 'Hello World'}
 
-app.include_router(predictions_router, prefix="/predict")
+app.include_router(predictions_router)
