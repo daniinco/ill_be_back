@@ -15,3 +15,15 @@ class PreprocessedAdvertRequest(BaseModel):
     description_length: float
     category: float
     images_qty: float
+
+class AsyncPredictResponse(BaseModel):
+    task_id: int
+    status: str
+    message: str
+
+class ModerationResultResponse(BaseModel):
+    task_id: int
+    status: str
+    is_violation: Optional[bool] = None
+    probability: Optional[float] = None
+    error_message: Optional[str] = None
