@@ -54,12 +54,11 @@ async def async_predict(item_id: int):
         kafka_producer = app.state.kafka_producer
         if kafka_producer is None:
             raise HTTPException(status_code=503, detail="кафка недосупна")
-        service = CreateAdvertRequest(kafka_producer)
+        service = AsyncModerationService(kafka_producer)
         result = await service.create_moderation_task(item_id)
         if result is None:
             raise HTTPException(status_code=404, detail="Объявление не найдено")
         return result
-    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
 
