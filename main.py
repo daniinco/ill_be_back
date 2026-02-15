@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from routers.predictions import router as predictions_router
+from routers.data import router as data_router
 from clients.kafka import KafkaProducer
 from model import load_model
 import logging
@@ -43,3 +44,4 @@ async def root():
     return {'message': 'Hello World'}
 
 app.include_router(predictions_router)
+app.include_router(data_router)
