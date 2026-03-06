@@ -45,3 +45,7 @@
 
 Тесты также можно как то запустить поверх postgres не из докера, 
 но для этого надо создать юзера postgres с паролем postgres.
+
+Запуск тестов(после подключения к окружению)
+cd /Users/daklo/for_backend && python -m pytest tests/ -m "not integration" -v
+cd /Users/daklo/for_backend && python -m pytest tests/ -m integration --collect-only

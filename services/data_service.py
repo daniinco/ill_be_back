@@ -1,5 +1,7 @@
 from repositories.user_repository import UserRepository
 from repositories.advertisement_repository import AdvertisementRepository
+from repositories.prediction_repository import PredictionRepository
+from repositories.moderation_repository import ModerationRepository
 from fastapi import HTTPException
 import logging
 
@@ -9,6 +11,8 @@ class DataService:
     def __init__(self):
         self.user_repo = UserRepository()
         self.ad_repo = AdvertisementRepository()
+        self.prediction_repo = PredictionRepository()
+        self.moderation_repo = ModerationRepository()
     
     async def create_user(self, name: str, is_verified: bool) -> dict:
         user_id = await self.user_repo.create_user(name, is_verified)
@@ -52,4 +56,22 @@ class DataService:
             "description": description,
             "category": category,
             "images_qty": images_qty
+        }
+    
+    async def close_advertisement(self, item_id: int) -> dict:
+        ad_data = await self.ad_repo.get_advertisement(item_id)
+        if ad_data is None:
+            raise HTTPException(status_code=404, detail=f"Объявление {item_id} не найдено")
+        
+        ad_id = ad_data['id']
+        
+        deleted = await self.ad_repo.delete_advertisement(ad_id)
+        if not deleted:
+            raise HTTPException(status_code=500, detail="Не удалось удалить")
+        
+        await self.prediction_repo.invalidate_prediction(item_id)
+        
+        return {
+            "message": "Объявление закрыто",
+            "item_id": item_id
         }

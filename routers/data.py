@@ -33,3 +33,14 @@ async def create_advertisement(ad: CreateAdvertRequest):
     except Exception as e:
         logger.error(f"Error creating advertisement: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
+
+@router.delete("/close")
+async def close_advertisement(item_id: int):
+    try:
+        service = DataService()
+        return await service.close_advertisement(item_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error closing advertisement: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")

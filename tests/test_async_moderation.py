@@ -7,6 +7,7 @@ from repositories.user_repository import UserRepository
 from repositories.advertisement_repository import AdvertisementRepository
 from repositories.moderation_repository import ModerationRepository
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_create_task():
     from main import app
@@ -41,6 +42,7 @@ async def test_create_task():
     
     await user_repo.delete_user(user_id)
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_get_moderation_result_returns_status():
     from main import app

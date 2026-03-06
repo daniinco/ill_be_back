@@ -2,6 +2,7 @@ import pytest
 from repositories.user_repository import UserRepository
 from repositories.advertisement_repository import AdvertisementRepository
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_create_user():
     user_repo = UserRepository()
@@ -15,6 +16,7 @@ async def test_create_user():
     
     await user_repo.delete_user(user_id)
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_create_advert():
     user_repo = UserRepository()
@@ -45,18 +47,21 @@ async def test_create_advert():
     await ad_repo.delete_advertisement(ad_id)
     await user_repo.delete_user(user_id)
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_unexist_user():
     user_repo = UserRepository()
     user = await user_repo.get_user(666)
     assert user is None
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_get_unexist_advert():
     ad_repo = AdvertisementRepository()
     ad = await ad_repo.get_advertisement(666)
     assert ad is None
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_delete_user_also_delete_advert():
     user_repo = UserRepository()

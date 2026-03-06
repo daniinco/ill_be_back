@@ -1,5 +1,6 @@
 from models.models import AdvertRequest, PreprocessedAdvertRequest
 from repositories.advertisement_repository import AdvertisementRepository
+from repositories.prediction_repository import PredictionRepository
 import numpy as np
 import logging
 
@@ -26,6 +27,12 @@ class PredictionService:
         """
         logger.info(f"Предсказываем для объявления {item_id}")
         
+        prediction_repository = PredictionRepository()
+        
+        if cached_result := await prediction_repository.get_cached_prediction(item_id):
+            logger.info(f"Возвращаем результат из кэша для {item_id}")
+            return cached_result
+        
         ad_repository = AdvertisementRepository()
         ad_data = await ad_repository.get_advertisement(item_id)
         
@@ -45,7 +52,11 @@ class PredictionService:
         preprocessed_advert = self.preprocess_advert(advertisement)
         prediction, probability = self.model_predict(preprocessed_advert)
         logger.info(f"Prediction: {prediction}, probability: {probability}")
-        return {"is_violation": prediction, "probability": probability}
+        
+        result = {"is_violation": prediction, "probability": probability}
+        await prediction_repository.cache_prediction(item_id, result)
+        
+        return result
     
     def preprocess_advert(self, advertisement: AdvertRequest) -> PreprocessedAdvertRequest:
         """

@@ -2,6 +2,7 @@ import pytest
 from repositories.user_repository import UserRepository
 from repositories.advertisement_repository import AdvertisementRepository
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_sp_pos(client):
     user_repo = UserRepository()
@@ -30,6 +31,7 @@ async def test_sp_pos(client):
     await ad_repo.delete_advertisement(ad_id)
     await user_repo.delete_user(user_id)
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_sp_neg(client):
     user_repo = UserRepository()
@@ -58,6 +60,7 @@ async def test_sp_neg(client):
     await ad_repo.delete_advertisement(ad_id)
     await user_repo.delete_user(user_id)
 
+@pytest.mark.integration
 def test_sp_not_fund(client):
     response = client.post("/simple_predict?item_id=666")
     
