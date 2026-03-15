@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 from contextlib import asynccontextmanager
 from routers.predictions import router as predictions_router
 from routers.data import router as data_router
 from clients.kafka import KafkaProducer
 from model import load_model
+from observability.middleware import PrometheusMiddleware
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 import logging
 
 logger = logging.getLogger(__name__)
@@ -38,6 +41,12 @@ async def lyfespan(app: FastAPI):
     del app.state.model
 
 app = FastAPI(lifespan=lyfespan)
+
+app.add_middleware(PrometheusMiddleware)
+
+@app.get("/metrics")
+async def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @app.get("/")
 async def root():

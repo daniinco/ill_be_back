@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Mapping, Any
 from clients.postgres import get_pg_connection
+from observability.metrics import DB_QUERY_DURATION_SECONDS
+import time
 
 @dataclass(frozen=True)
 class UserPostgresStorage:
@@ -11,8 +13,13 @@ class UserPostgresStorage:
             RETURNING *
         '''
 
-        async with get_pg_connection() as connection:
-            return dict(await connection.fetchrow(query, name, is_verified))
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                return dict(await connection.fetchrow(query, name, is_verified))
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="insert").observe(duration)
     
     async def select(self, id: int) -> Mapping[str, Any]:
         query = '''
@@ -22,13 +29,18 @@ class UserPostgresStorage:
             LIMIT 1
         '''
 
-        async with get_pg_connection() as connection:
-            row = await connection.fetchrow(query, id)
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                row = await connection.fetchrow(query, id)
 
-            if row:
-                return dict(row)
-            
-            return None
+                if row:
+                    return dict(row)
+                
+                return None
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="select").observe(duration)
     
     async def delete(self, id: int) -> bool:
         query = '''
@@ -37,9 +49,14 @@ class UserPostgresStorage:
             RETURNING *
         '''
 
-        async with get_pg_connection() as connection:
-            row = await connection.fetchrow(query, id)
-            return row is not None
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                row = await connection.fetchrow(query, id)
+                return row is not None
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="delete").observe(duration)
 
 @dataclass(frozen=True)
 class UserRepository:

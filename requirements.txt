@@ -1,4 +1,5 @@
 aiokafka==0.12.0
+prometheus-client==0.24.1
 redis==5.0.1
 annotated-doc==0.0.4
 annotated-types==0.7.0

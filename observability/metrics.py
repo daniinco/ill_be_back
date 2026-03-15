@@ -1,0 +1,45 @@
+from prometheus_client import Counter, Histogram
+
+HTTP_REQUESTS_TOTAL = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status"],
+)
+
+HTTP_REQUEST_DURATION_SECONDS = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "endpoint"],
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.2, 0.5, 1, 2, 5),
+)
+
+PREDICTIONS_TOTAL = Counter(
+    "predictions_total",
+    "Total number of predictions",
+    ["result"]
+)
+
+PREDICTION_DURATION_SECONDS = Histogram(
+    "prediction_duration_seconds",
+    "Time spent on ML model inference",
+    buckets=[0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0]
+)
+
+PREDICTION_ERRORS_TOTAL = Counter(
+    "prediction_errors_total",
+    "Total number of prediction errors",
+    ["error_type"]
+)
+
+DB_QUERY_DURATION_SECONDS = Histogram(
+    "db_query_duration_seconds",
+    "Database query duration in seconds",
+    ["query_type"],
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.5, 1, 2),
+)
+
+MODEL_PREDICTION_PROBABILITY = Histogram(
+    "model_prediction_probability",
+    "Distribution of prediction probabilities from ML model",
+    buckets=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+)

@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Mapping, Any, Optional
 from clients.postgres import get_pg_connection
+from observability.metrics import DB_QUERY_DURATION_SECONDS
 from datetime import datetime
+import time
 
 @dataclass(frozen=True)
 class ModerationPostgresStorage:
@@ -13,8 +15,13 @@ class ModerationPostgresStorage:
             RETURNING *
         '''
         
-        async with get_pg_connection() as connection:
-            return dict(await connection.fetchrow(query, item_id))
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                return dict(await connection.fetchrow(query, item_id))
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="insert").observe(duration)
     
     async def select(self, task_id: int) -> Optional[Mapping[str, Any]]:
         query = '''
@@ -25,13 +32,18 @@ class ModerationPostgresStorage:
             LIMIT 1
         '''
         
-        async with get_pg_connection() as connection:
-            row = await connection.fetchrow(query, task_id)
-            
-            if row:
-                return dict(row)
-            
-            return None
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                row = await connection.fetchrow(query, task_id)
+                
+                if row:
+                    return dict(row)
+                
+                return None
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="select").observe(duration)
     
     async def update_completed(
         self, 
@@ -49,9 +61,14 @@ class ModerationPostgresStorage:
             returning *
         '''
         
-        async with get_pg_connection() as connection:
-            row = await connection.fetchrow(query, task_id, is_violation, probability)
-            return row is not None
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                row = await connection.fetchrow(query, task_id, is_violation, probability)
+                return row is not None
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="update").observe(duration)
     
     async def update_failed(self, task_id: int, error_message: str) -> bool:
         query = '''
@@ -63,9 +80,14 @@ class ModerationPostgresStorage:
             returning *
         '''
         
-        async with get_pg_connection() as connection:
-            row = await connection.fetchrow(query, task_id, error_message)
-            return row is not None
+        start_time = time.time()
+        try:
+            async with get_pg_connection() as connection:
+                row = await connection.fetchrow(query, task_id, error_message)
+                return row is not None
+        finally:
+            duration = time.time() - start_time
+            DB_QUERY_DURATION_SECONDS.labels(query_type="update").observe(duration)
 
 @dataclass(frozen=True)
 class ModerationRepository:
