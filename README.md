@@ -27,9 +27,11 @@
     pip install aiokafka
 
     pip install uvicorn
+    pip install prometheus-client
+    pip install redis
     hash -r
 
-    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    uvicorn main:app --reload --host 0.0.0.0 --port 8003
 
     новый терминал(можно несколько раз):
     python -m workers.moderation_worker

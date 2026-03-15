@@ -21,33 +21,63 @@ export const options = {
 
 const BASE = __ENV.BASE_URL || 'http://localhost:8003';
 
+let userCounter = 1;
+let adCounter = 1;
+
 export default function () {
-  const validPayload = JSON.stringify({
-    seller_id: 1,
-    is_verified_seller: true,
-    item_id: 100,
-    name: 'Test',
-    description: '',
+  const headers = { 'Content-Type': 'application/json' };
+
+  const userPayload = JSON.stringify({
+    name: `TestUser_${userCounter++}`,
+    is_verified: Math.random() > 0.5
+  });
+
+  const userResponse = http.post(`${BASE}/users`, userPayload, { headers });
+  check(userResponse, {
+    'user created': (r) => r.status === 200,
+  });
+
+  let userId = 1;
+  if (userResponse.status === 200) {
+    try {
+      userId = JSON.parse(userResponse.body).id;
+    } catch (e) {}
+  }
+
+  const adPayload = JSON.stringify({
+    user_id: userId,
+    item_id: adCounter++,
+    name: 'Test Product',
+    description: 'Test description for load testing',
+    category: Math.floor(Math.random() * 10) + 1,
+    images_qty: Math.floor(Math.random() * 5) + 1
+  });
+
+  const adResponse = http.post(`${BASE}/advertisements`, adPayload, { headers });
+  check(adResponse, {
+    'ad created': (r) => r.status === 200,
+  });
+
+  let adId = 1;
+  if (adResponse.status === 200) {
+    try {
+      adId = JSON.parse(adResponse.body).id;
+    } catch (e) {}
+  }
+
+  const predictPayload = JSON.stringify({
+    seller_id: userId,
+    is_verified_seller: Math.random() > 0.5,
+    item_id: adId,
+    name: 'Test Product',
+    description: 'Test description',
     category: 5,
     images_qty: 3
   });
 
-  const invalidPayload = JSON.stringify({
-    seller_id: 1,
-    is_verified_seller: false,
-    item_id: 200,
-    name: 'Bad Product',
-    description: '',
-    category: 99,
-    images_qty: 0
-  });
-
-  const headers = { 'Content-Type': 'application/json' };
-
   const responses = [
-    http.post(`${BASE}/predict`, validPayload, { headers }),
-    http.post(`${BASE}/predict`, invalidPayload, { headers }),
-    http.post(`${BASE}/simple_predict?item_id=1`, null, { headers }),
+    http.post(`${BASE}/predict`, predictPayload, { headers }),
+    http.post(`${BASE}/simple_predict?item_id=${adId}`, null, { headers }),
     http.get(`${BASE}/`),
   ];
 
